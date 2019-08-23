@@ -106,7 +106,11 @@
       },
       'event[event_type]': "required",
       'event[start_date]': "required",
-      'event[reccurring_days][]': "required"
+      'event[reccurring_days][]': "required",
+      'event[end_date]': function(element){
+        return $("#event_type").val() === 'recurring'
+      },
+
     },
     messages: {
       'event[title]': "Please enter Title",
