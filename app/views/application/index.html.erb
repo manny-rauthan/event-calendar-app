@@ -99,6 +99,7 @@
 
 <!-- Validate the event form -->
 <script>
+  var event_type = 'single'
   $("#new_event").validate({
     rules: {
       'event[title]': {
@@ -106,17 +107,14 @@
       },
       'event[event_type]': "required",
       'event[start_date]': "required",
-      'event[reccurring_days][]': "required",
-      'event[end_date]': function(element){
-        return $("#event_type").val() === 'recurring'
-      },
-
+      'event[reccurring_days][]': "required"
     },
     messages: {
       'event[title]': "Please enter Title",
       'event[event_type]':"Please select event type",
-      'event[start_date]': "Please select a event start date",
-      'event[reccurring_days][]': "Please select at least one day"
+      'event[start_date]': "Please enter event start date",
+      'event[reccurring_days][]': "Please select at least one day",
+      'event[end_date]': "Please enter end date",
     }
   });
 </script>
@@ -220,10 +218,13 @@
 <!-- on change of event type -->
 <script>
   $("#event_type").on('change', function () {
+    event_type = $(this).val();
     if ($(this).val() === 'recurring') {
       $("#end_date_div").show()
+      $("#end_date").rules('add','required');
     } else {
       $("#end_date_div").hide()
+      $("#end_date").rules('remove','required');
       $(".modal-body #end_date").val('');
       $(':checkbox').prop('checked', false);
     }

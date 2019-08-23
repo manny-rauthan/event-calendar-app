@@ -12,12 +12,16 @@
 
 ActiveRecord::Schema.define(version: 2019_08_19_095042) do
 
-  create_table "events", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
+  create_table "events", force: :cascade do |t|
     t.string "title"
     t.text "description"
-    t.string "type"
+    t.string "event_type"
     t.date "start_date"
     t.date "end_date"
+    t.text "reccurring_days"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
