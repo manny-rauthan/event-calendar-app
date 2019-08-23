@@ -1,232 +1,228 @@
 <% if notice %>
 <div class="alert alert-success alert-dismissible">
-  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-  <%= notice %>
+    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+    <%= notice %>
 </div>
 <% end %>
-
-
 <div id='calendar'></div>
-
-
-
 <!-- Modal -->
 <div id="myModal" class="modal fade" role="dialog">
-  <div class="modal-dialog">
-    <!-- Modal content-->
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Add Event</h5>
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-      </div>
-      <div class="modal-body">
-      <%= simple_form_for @event,id: "ModalForm" do |f| %>
-        <input type="hidden" value="" id="event_id" name="event[event_id]">
-        <div class="form-group">
-          <div class="row">
-            <div class="col-md-3">
-              <label for="">Title</label>
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Add Event</h4>
             </div>
-            <div class="col-md-8">
-              <input type="text" id="title" class="form-control input-sm" name="event[title]" required placeholder="Enter Title">
+            <div class="modal-body">
+                <%= simple_form_for @event,id: "ModalForm" do |f| %>
+                <input type="hidden" value="" id="event_id" name="event[event_id]">
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="">Title</label>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="text" id="title" class="form-control input-sm" name="event[title]" required placeholder="Enter Title">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="">Type</label>
+                        </div>
+                        <div class="col-md-8">
+                            <select name="event[event_type]" id="event_type" required class="form-control input-sm">
+                                <option value="">Select Type</option>
+                                <option value="single">Single</option>
+                                <option value="recurring">Reccurring</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="">Start Date</label>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="text" id="start_date" name="event[start_date]" class="form-control datepicker input-sm">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group" id="end_date_div" style="display:none">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="">End Date</label>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="date" id="end_date" name="event[end_date]" class="form-control">
+                        </div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="">Recurring</label>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="checkbox" value=0 class="days_checkbox" name="event[reccurring_days][]">Sun&nbsp;
+                            <input type="checkbox" value=1 class="days_checkbox" name="event[reccurring_days][]">Mon&nbsp;
+                            <input type="checkbox" value=2 class="days_checkbox" name="event[reccurring_days][]">Tue&nbsp;
+                            <input type="checkbox" value=3 class="days_checkbox" name="event[reccurring_days][]">Wed&nbsp;
+                            <input type="checkbox" value=4 class="days_checkbox" name="event[reccurring_days][]">Thu&nbsp;
+                            <input type="checkbox" value=5 class="days_checkbox" name="event[reccurring_days][]">Fri&nbsp;
+                            <input type="checkbox" value=6 class="days_checkbox" name="event[reccurring_days][]">Sat&nbsp;
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8 offset-md-3">
+                            <label id="reccurring_days-error" class="error" for="event[reccurring_days][]"></label>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
+            <div class="modal-footer">
+                <%= link_to 'Delete', event_path(0), method: :delete, id: "delete_event", data: { confirm: 'Are you sure to remove this event ?' },class: "btn btn-sm btn-danger" %>
+                <input type="submit" class="btn btn-primary btn-sm" id="submit_btn" name="submit">
+            </div>
+            <% end %>
         </div>
-        <div class="form-group">
-          <div class="row">
-            <div class="col-md-3">
-              <label for="">Type</label>
-            </div>
-            <div class="col-md-8">
-              <select name="event[event_type]" id="event_type" required class="form-control">
-                <option value="">Select Type</option>
-                <option value="single">Single</option>
-                <option value="recurring">Reccurring</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="form-group">
-          <div class="row">
-            <div class="col-md-3">
-              <label for="">Start Date</label>
-            </div>
-            <div class="col-md-8">
-              <input type="date" id="start_date" name="event[start_date]" class="form-control">
-            </div>
-          </div>
-        </div>
-        <div class="form-group" id="end_date_div" style="display:none">
-          <div class="row">
-            <div class="col-md-3">
-              <label for="">End Date</label>
-            </div>
-            <div class="col-md-8">
-              <input type="date" id="end_date" name="event[end_date]" class="form-control">
-            </div>
-          </div>
-          <br>
-          <div class="row">
-            <div class="col-md-3">
-              <label for="">Recurring</label>
-            </div>
-            <div class="col-md-8">
-              <input type="checkbox" value=0 class="days_checkbox" name="event[reccurring_days][]">Sun&nbsp;
-              <input type="checkbox" value=1 class="days_checkbox" name="event[reccurring_days][]">Mon&nbsp;
-              <input type="checkbox" value=2 class="days_checkbox" name="event[reccurring_days][]">Tue&nbsp;
-              <input type="checkbox" value=3 class="days_checkbox" name="event[reccurring_days][]">Wed&nbsp;
-              <input type="checkbox" value=4 class="days_checkbox" name="event[reccurring_days][]">Thu&nbsp;
-              <input type="checkbox" value=5 class="days_checkbox" name="event[reccurring_days][]">Fri&nbsp;
-              <input type="checkbox" value=6 class="days_checkbox" name="event[reccurring_days][]">Sat&nbsp;
-            </div>
-          </div>
-            <div class="row">
-              <div class="col-md-8 offset-md-3">
-                <label id="reccurring_days-error" class="error" for="event[reccurring_days][]"></label>
-              </div>
-            </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <%= link_to 'Delete', event_path(0), method: :delete, id: "delete_event", data: { confirm: 'Are you sure to remove this event ?' },class: "btn btn-sm btn-danger" %>
-        <input type="submit" class="btn btn-primary btn-sm" id="submit_btn" name="submit">
-      </div>
-    <% end %>
     </div>
-
-  </div>
 </div>
-
 <!-- Validate the event form -->
 <script>
-  var event_type = 'single'
-  $("#new_event").validate({
+var event_type = 'single'
+$("#new_event").validate({
     rules: {
-      'event[title]': {
-        required: true,
-      },
-      'event[event_type]': "required",
-      'event[start_date]': "required",
-      'event[reccurring_days][]': "required"
+        'event[title]': {
+            required: true,
+        },
+        'event[event_type]': "required",
+        'event[start_date]': "required",
+        'event[reccurring_days][]': "required"
     },
     messages: {
-      'event[title]': "Please enter Title",
-      'event[event_type]':"Please select event type",
-      'event[start_date]': "Please enter event start date",
-      'event[reccurring_days][]': "Please select at least one day",
-      'event[end_date]': "Please enter end date",
+        'event[title]': "Please enter Title",
+        'event[event_type]': "Please select event type",
+        'event[start_date]': "Please enter event start date",
+        'event[reccurring_days][]': "Please select at least one day",
+        'event[end_date]': "Please enter end date",
     }
-  });
+});
 </script>
 <!-- end of validation -->
-
 <!-- setting date -->
 <script>
-  function setDate(date){
+function setDate(date) {
     let fulldate = new Date(date)
     let dd = String(fulldate.getDate()).padStart(2, '0');
     let mm = String(fulldate.getMonth() + 1).padStart(2, '0'); //January is 0!
     let yyyy = fulldate.getFullYear();
     return yyyy + '-' + mm + '-' + dd;
-  }
+}
 </script>
 <!-- end -->
-
-
 <!-- show event form -->
 <script>
-  function showModal(eventObj = '',info=''){
+function showModal(eventObj = '', info = '') {
     $('#myModal').modal({
         show: true
-      });
-    if(eventObj != ''){
-      $("#delete_event").show();
-      $("#delete_event").attr("href","/events/"+eventObj.id)
+    });
+    if (eventObj != '') {
+        $("#delete_event").show();
+        $("#delete_event").attr("href", "/events/" + eventObj.id)
 
-      // checking if reccurring event setting the days checkboxes
-      if(eventObj.extendedProps.type == 'recurring'){
-        $("#end_date_div").show()
-        let days_array = eventObj.extendedProps.reccurring_days
-        for(var i = 0; i < days_array.length;i++)
-        $(':checkbox[value="'+days_array[i]+'"]').prop('checked', true);
-        var start_date = setDate(eventObj.extendedProps.start_date)
-        var end_date = setDate(eventObj.extendedProps.end_date)
-        $(".modal-body #end_date").val(end_date);
-      }else{
-        var start_date = setDate(eventObj.start)
-      }
-      // end
-      
-      // setting event modal fields--------------->
-      $(".modal-body #start_date").val(start_date);
-      $(".modal-body #event_id").val(eventObj.id);
-      $(".modal-body #event_type").val(eventObj.extendedProps.type)
-      $(".modal-body #title").val(eventObj.title);
-      $("#submit_btn").val("Update");
-      
+        // checking if reccurring event setting the days checkboxes
+        if (eventObj.extendedProps.type == 'recurring') {
+            $("#end_date_div").show()
+            let days_array = eventObj.extendedProps.reccurring_days
+            for (var i = 0; i < days_array.length; i++)
+                $(':checkbox[value="' + days_array[i] + '"]').prop('checked', true);
+            var start_date = setDate(eventObj.extendedProps.start_date)
+            var end_date = setDate(eventObj.extendedProps.end_date)
+            $(".modal-body #end_date").val(end_date);
+        } else {
+            var start_date = setDate(eventObj.start)
+        }
+        // end
+
+        // setting event modal fields--------------->
+        $(".modal-body #start_date").val(start_date);
+        $(".modal-body #event_id").val(eventObj.id);
+        $(".modal-body #event_type").val(eventObj.extendedProps.type)
+        $(".modal-body #title").val(eventObj.title);
+        $("#submit_btn").val("Update");
+
+    } else {
+        $(".modal-body #end_date_div").hide();
+        $(".modal-body #start_date").val(info.dateStr);
+        $(".modal-body #end_date").val('');
+        $(".modal-body #event_type").val('')
+        $(".modal-body #title").val('');
+        $("#delete_event").hide()
+        $("#submit_btn").val("Add");
     }
-    else{
-      $(".modal-body #end_date_div").hide();
-      $(".modal-body #start_date").val(info.dateStr);
-      $(".modal-body #end_date").val('');
-      $(".modal-body #event_type").val('')
-      $(".modal-body #title").val('');
-      $("#delete_event").hide()
-      $("#submit_btn").val("Add");
-    } 
-  }
-  // end
+}
+// end
 
-  
-  // remove juery validation after close
-  $('#myModal').on('hidden.bs.modal', function() {
+
+// remove juery validation after close
+$('#myModal').on('hidden.bs.modal', function() {
     var $alertas = $('#new_event');
     $alertas.validate().resetForm();
     $alertas.find('.error').removeClass('error');
     $('#reccurring_days-error').addClass('error');
-  });
-  // end
+});
+// end
 
 
-  // calendar UI code------------------->
-  document.addEventListener('DOMContentLoaded', function () {
+// calendar UI code------------------->
+document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
     var calendar = new FullCalendar.Calendar(calendarEl, {
-      events: <%=  @events.to_json.html_safe %>,
-      plugins: ['dayGrid', 'interaction'],
-      eventClick: function(info){
-        var eventObj = info.event;
-        if(eventObj.extendedProps.type == 'recurring'){
-          let answer = confirm("You are editing a reccurring event. Are you sure to continue ?");
-          if(answer) 
-            showModal(eventObj,'');
-        }else{
-          showModal(eventObj,'');
+        events: <%=  @events.to_json.html_safe %>,
+        plugins: ['dayGrid', 'interaction'],
+        eventClick: function(info) {
+            var eventObj = info.event;
+            if (eventObj.extendedProps.type == 'recurring') {
+                let answer = confirm("You are editing a reccurring event. Are you sure to continue ?");
+                if (answer)
+                    showModal(eventObj, '');
+            } else {
+                showModal(eventObj, '');
+            }
+        },
+        dateClick: function(info) {
+            showModal('', info);
         }
-      },
-      dateClick: function (info) {
-        showModal('',info);
-      }
     });
 
     calendar.render();
-  });
-  // end--------------> 
+});
+// end-------------->
 </script>
-
-
 <!-- on change of event type -->
 <script>
-  $("#event_type").on('change', function () {
+$("#event_type").on('change', function() {
     event_type = $(this).val();
     if ($(this).val() === 'recurring') {
-      $("#end_date_div").show()
-      $("#end_date").rules('add','required');
+        $("#end_date_div").show()
+        $("#end_date").rules('add', 'required');
     } else {
-      $("#end_date_div").hide()
-      $("#end_date").rules('remove','required');
-      $(".modal-body #end_date").val('');
-      $(':checkbox').prop('checked', false);
+        $("#end_date_div").hide()
+        $("#end_date").rules('remove', 'required');
+        $(".modal-body #end_date").val('');
+        $(':checkbox').prop('checked', false);
     }
+})
+</script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('#myModal').on('shown.bs.modal', function() {
+      $('.datepicker').datetimepicker();
+    })
+    
   })
+
 </script>
