@@ -1,6 +1,6 @@
 class ApplicationController < ActionController::Base
 	def index
-		events = Event.all
+		events = Event.where(:parent_id => 0).all
 		@events = Array.new
 		events.each do |event|
 			ev = Hash.new
