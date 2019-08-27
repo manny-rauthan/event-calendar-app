@@ -1,14 +1,14 @@
 class EventsController < ApplicationController
-  before_action :set_event, only: [:destroy]
-
   # POST /events.json
+
+  before_action :set_event, only: ['destroy']
   def create
-    start_date = Date.parse(params[:event][:start_date])
-    end_date = Date.parse(params[:event][:end_date])
     w_days = params[:event][:reccurring_days]
     params['event']['reccurring_days'] = params['event']['reccurring_days'].to_s
-
+  
     if params['event']['event_id'].blank?
+      start_date = Date.parse(params[:event][:start_date])
+      end_date = Date.parse(params[:event][:end_date])
       @event = Event.new(event_params)
       @event.parent_id = 0
       respond_to do |format|
@@ -16,7 +16,8 @@ class EventsController < ApplicationController
           d = start_date
           while d <= end_date
             if w_days.include? d.wday.to_s
-              event = Event.new(event_params) 
+              event = Event.new(event_params)
+              raise event.inspect 
               event.start_date =  d.strftime("%Y-%m-%d")
               event.end_date = d.strftime("%Y-%m-%d")
               event.parent_id = @event.id
@@ -30,17 +31,75 @@ class EventsController < ApplicationController
         end
       end
     else
-      @event = Event.find(params[:id])
-      Event.where(:parent_id => @event.id).destroy_all
+      @child = Event.find(params[:event][:event_id])
+      @parent = Event.find(@child.id)
+      if @child.event_type === 'single'
+        if @child_event.update(event_params)
+          format.html { redirect_to root_url, notice: 'This Event was successfully updated.' }
+        else
+          format.html { redirect_to root_url, notice: 'This Event was not updated.' }
+        end
+      else
+        start_date = Date.parse(@parent.start_date.to_s)
+        if params[:edit_as] === 'single'
+          @child = Event.find(params[:event][:event_id])
+          @child.start_time = params[:event][:start_time]
+          @child.end_time = params[:event][:end_time]
+          @child.title = params[:event][:title]
+          if @child.save
+            format.html { redirect_to root_url, notice: 'This Event was successfully updated.' }
+          end
+        else
+          @child = Event.find(params[:event][:event_id])
+          @parent = Event.find(@child.parent_id)
+          w_days_existing = @parent.reccurring_days
+          child_events = Event.where(:parent_id => @parent.id)
+
+          raise (w_days - w_days_existing).inspect
+
+          # removing the weekdays events if present
+          diff = w_days_existing - w_days
+          unless diff.blank?
+            child_events.each do |ev|
+              start_date = Date.parse(ev.start_date)
+              if diff.include? start_date.wday.to_s
+                ev.destroy
+              end
+            end
+          end
+          child_events = Event.where(:parent_id => @parent.id)
+          # adding new weekdays events if present
+          new_wdays = w_days - w_days_existing
+          d = Date.parse(@parent.start_date)
+          unless params[:event][:end_date].nil?
+            end_date = Date.parse(params[:event][:end_date])
+          else
+            end_date = Date.parse(@event.end_date.to_s)
+            unless new_wdays.blank?
+              while d <= end_date
+                if new_wdays.include? d.wday.to_s
+                  event = Event.new(event_params) 
+                  event.start_date =  d.strftime("%Y-%m-%d")
+                  event.end_date = d.strftime("%Y-%m-%d")
+                  event.parent_id = @parent.id
+                  event.save
+                end
+                d += 1
+              end 
+            end
+          end
+        end
+
       respond_to do |format|
         if @event.save
           d = start_date
           while d <= end_date
             if w_days.include? d.wday.to_s
-              Event.new(event_params)
-              Event.start_date =  d.strftime("%Y-%m-%d")
-              Event.end_time = ""
-              Event.parent_id = @event.id
+              event = Event.new(event_params)
+              event.start_date =  d.strftime("%Y-%m-%d")
+              event.end_time = ""
+              event.parent_id = @event.id
+              event.save
             end
             d += 1
           end  
@@ -48,7 +107,9 @@ class EventsController < ApplicationController
         else
           format.html { redirect_to root_url, notice: 'Event was not updated.' }
         end
+      end 
       end
+      
     end
   end
 
@@ -70,6 +131,6 @@ class EventsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def event_params
-      params.require(:event).permit(:title, :event_type, :start_date, :end_date, :reccurring_days,:start_time,:end_time)
+      params.require(:event).permit(:title, :event_type, :start_date, :end_date, :reccurring_days,:start_time,:end_time,:parent_id)
     end
 end

@@ -37,7 +37,6 @@
           </div>
         </div>
         
-
         <!-- title -->
         <div class="form-group">
           <div class="row">
@@ -59,11 +58,13 @@
             <div class="col-md-4">
               <input type="text" id="datepicker1" name="event[start_date]" class="form-control datepicker input-sm">
             </div>
-            <div class="col-md-2">
-              <label for="">End Date</label>
-            </div>
-            <div class="col-md-4">
-              <input type="text" id="datepicker2" name="event[end_date]" class="form-control datepicker input-sm">
+            <div id="datepicker2_div" style="display:none">
+              <div class="col-md-2">
+                <label for="">End Date</label>
+              </div>
+              <div class="col-md-4">
+                <input type="text" id="datepicker2" name="event[end_date]" class="form-control datepicker input-sm">
+              </div>
             </div>
           </div>
         </div>
@@ -103,7 +104,7 @@
         </div>
 
         <!-- days selection -->
-        <div class="form-group">
+        <div class="form-group" id="recurring_days_div">
           <div class="row">
             <div class="col-md-2">
               <label for="">Recurring</label>
@@ -137,22 +138,13 @@
 
 <script>
   $(document).ready(function(){
-
-    if($(".edit_as").val() === 'single' ){
-      $("#datepicker1").attr('disabled',true)
-      $("#datepicker2").attr('disabled',true)
-    }else{
-      $("#datepicker1").attr('disabled',false)
-      $("#datepicker2").attr('disabled',false)
-    }
-
     $(".edit_as").change(function(){
       if($(this).val() === 'single'){
         $("#datepicker1").attr('disabled',true)
         $("#datepicker2").attr('disabled',true)
+        $("#recurring_days_div").hide()
       }else{
-        $("#datepicker1").attr('disabled',false)
-        $("#datepicker2").attr('disabled',false)
+        $("#recurring_days_div").show()
       }
     })
 
@@ -199,18 +191,20 @@ function showModal(eventObj = '', info = '') {
     show: true
   });
   if (eventObj != '') {
+    if($(".edit_as").val() === 'single' ){
+      $("#recurring_days_div").hide()
+    }
     $("#delete_event").show();
     $("#delete_event").attr("href", "/events/" + eventObj.id)
-
+    alert(eventObj.extendedProps.start_time);
+    $("#datepicker3").val(eventObj.extendedProps.start_time);
+    $("#datepicker4").val(eventObj.extendedProps.end_time);
     // checking if reccurring event setting the days checkboxes
     if (eventObj.extendedProps.type == 'recurring') {
-      $("#datepicker2_div").show()
       let days_array = eventObj.extendedProps.reccurring_days
       for (var i = 0; i < days_array.length; i++)
         $(':checkbox[value="' + days_array[i] + '"]').prop('checked', true);
-      var start_date = setDate(eventObj.extendedProps.start_date)
-      var end_date = setDate(eventObj.extendedProps.end_date)
-      $(".modal-body #datepicker2").val(end_date);
+      var start_date = setDate(eventObj.start)
     } else {
       var start_date = setDate(eventObj.start)
     }
@@ -222,14 +216,18 @@ function showModal(eventObj = '', info = '') {
     $(".modal-body #event_type").val(eventObj.extendedProps.type)
     $(".modal-body #title").val(eventObj.title);
     $("#submit_btn").val("Update");
-
+    $("#datepicker1").attr('disabled',true)
   } else {
+    $(':checkbox').prop('checked', false);
+    $("#datepicker1").attr('disabled',false)
+    $("#datepicker2").attr('disabled',false)
     $(".modal-body #datepicker2_div").hide();
     $(".modal-body #datepicker1").val(info.dateStr);
     $(".modal-body #datepicker2").val('');
     $(".modal-body #event_type").val('')
     $(".modal-body #title").val('');
     $("#delete_event").hide()
+    $("#recurring_days_div").hide()
     $("#submit_btn").val("Add");
   }
 }
@@ -239,12 +237,14 @@ function showModal(eventObj = '', info = '') {
 // remove juery validation after close
 $('#myModal').on('hidden.bs.modal', function() {
   var $alertas = $('#new_event');
+  $("#event_id").val("");
+  $("#recurring_days_div").hide()
+  $("#recurring_event").hide();
   $alertas.validate().resetForm();
   $alertas.find('.error').removeClass('error');
   $('#reccurring_days-error').addClass('error');
 });
 // end
-
 
 // calendar UI code------------------->
 document.addEventListener('DOMContentLoaded', function() {
@@ -280,8 +280,10 @@ $("#event_type").on('change', function() {
   if ($(this).val() === 'recurring') {
     $("#datepicker2_div").show()
     $("#datepicker2").rules('add', 'required');
+    $("#recurring_days_div").show();
   } else {
     $("#datepicker2_div").hide()
+    $("#recurring_days_div").hide();
     $("#datepicker2").rules('remove', 'required');
     $(".modal-body #datepicker2").val('');
     $(':checkbox').prop('checked', false);
@@ -292,7 +294,6 @@ $("#event_type").on('change', function() {
 <script type="text/javascript">
 $(document).ready(function() {
   $('#myModal').on('shown.bs.modal', function() {
-    
     // date pickers
     $('#datepicker1').datetimepicker({
       format: 'YYYY-MM-DD'
@@ -317,9 +318,6 @@ $(document).ready(function() {
       useCurrent: false,
       format: 'LT' //Important! See issue #1075
     });
-
-
   })
-
 })
 </script>

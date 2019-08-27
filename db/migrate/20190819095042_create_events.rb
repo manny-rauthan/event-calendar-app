@@ -6,8 +6,8 @@ class CreateEvents < ActiveRecord::Migration[5.2]
       t.string :event_type
       t.date :start_date
       t.date :end_date
-      t.date :start_time
-      t.date :end_time
+      t.string :start_time
+      t.string :end_time
       t.text :reccurring_days
       t.parent_id :event_id
       t.timestamps
