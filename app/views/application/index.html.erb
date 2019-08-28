@@ -196,7 +196,6 @@ function showModal(eventObj = '', info = '') {
     }
     $("#delete_event").show();
     $("#delete_event").attr("href", "/events/" + eventObj.id)
-    alert(eventObj.extendedProps.start_time);
     $("#datepicker3").val(eventObj.extendedProps.start_time);
     $("#datepicker4").val(eventObj.extendedProps.end_time);
     // checking if reccurring event setting the days checkboxes

@@ -8,23 +8,32 @@ class EventsController < ApplicationController
   
     if params['event']['event_id'].blank?
       start_date = Date.parse(params[:event][:start_date])
-      end_date = Date.parse(params[:event][:end_date])
+      
       @event = Event.new(event_params)
       @event.parent_id = 0
+      
+      if params[:event][:event_type] == 'single'
+        end_date =start_date
+        @event.end_date = start_date
+      else
+        end_date = Date.parse(params[:event][:end_date]) 
+      end
+
       respond_to do |format|
         if @event.save
           d = start_date
-          while d <= end_date
-            if w_days.include? d.wday.to_s
-              event = Event.new(event_params)
-              raise event.inspect 
-              event.start_date =  d.strftime("%Y-%m-%d")
-              event.end_date = d.strftime("%Y-%m-%d")
-              event.parent_id = @event.id
-              event.save
-            end
-            d += 1
-          end  
+          if @event.start_date != @event.end_date
+            while d <= end_date
+              if w_days.include? d.wday.to_s
+                event = Event.new(event_params) 
+                event.start_date =  d.strftime("%Y-%m-%d")
+                event.end_date = d.strftime("%Y-%m-%d")
+                event.parent_id = @event.id
+                event.save
+              end
+              d += 1
+            end  
+          end
           format.html { redirect_to root_url, notice: 'Event was successfully added.' }
         else
           format.html { redirect_to root_url, notice: 'Event was not added.' }
@@ -35,9 +44,9 @@ class EventsController < ApplicationController
       @parent = Event.find(@child.id)
       if @child.event_type === 'single'
         if @child_event.update(event_params)
-          format.html { redirect_to root_url, notice: 'This Event was successfully updated.' }
+          redirect_to root_url, notice: 'This Event was successfully updated.' 
         else
-          format.html { redirect_to root_url, notice: 'This Event was not updated.' }
+          redirect_to root_url, notice: 'This Event was not updated.' 
         end
       else
         start_date = Date.parse(@parent.start_date.to_s)
@@ -47,71 +56,51 @@ class EventsController < ApplicationController
           @child.end_time = params[:event][:end_time]
           @child.title = params[:event][:title]
           if @child.save
-            format.html { redirect_to root_url, notice: 'This Event was successfully updated.' }
+            redirect_to root_url, notice: 'This Event was successfully updated.' 
           end
         else
           @child = Event.find(params[:event][:event_id])
           @parent = Event.find(@child.parent_id)
           w_days_existing = @parent.reccurring_days
           child_events = Event.where(:parent_id => @parent.id)
-
-          raise (w_days - w_days_existing).inspect
-
+          
           # removing the weekdays events if present
-          diff = w_days_existing - w_days
+          diff = JSON.parse(w_days_existing) - w_days
           unless diff.blank?
             child_events.each do |ev|
-              start_date = Date.parse(ev.start_date)
+              start_date = Date.parse(ev.start_date.to_s)
               if diff.include? start_date.wday.to_s
                 ev.destroy
               end
             end
           end
+
           child_events = Event.where(:parent_id => @parent.id)
+          # child_events.update(event_params)
+
           # adding new weekdays events if present
-          new_wdays = w_days - w_days_existing
-          d = Date.parse(@parent.start_date)
-          unless params[:event][:end_date].nil?
-            end_date = Date.parse(params[:event][:end_date])
-          else
-            end_date = Date.parse(@event.end_date.to_s)
-            unless new_wdays.blank?
-              while d <= end_date
-                if new_wdays.include? d.wday.to_s
-                  event = Event.new(event_params) 
-                  event.start_date =  d.strftime("%Y-%m-%d")
-                  event.end_date = d.strftime("%Y-%m-%d")
-                  event.parent_id = @parent.id
-                  event.save
-                end
-                d += 1
-              end 
-            end
+          new_wdays = w_days - JSON.parse(w_days_existing)
+          exist_wdays = w_days & JSON.parse(w_days_existing)
+          d = Date.new
+          end_date = Date.parse(@parent.end_date.to_s)
+
+          unless new_wdays.blank?
+            while d <= end_date
+              if new_wdays.include? d.wday.to_s
+                event = Event.new(event_params) 
+                event.start_date =  d.strftime("%Y-%m-%d")
+                event.end_date = d.strftime("%Y-%m-%d")
+                event.parent_id = @parent.id
+                event.save
+              end
+              d += 1
+            end 
+          end
+          redirect_to root_url, notice: 'This Event was successfully updated.'
           end
         end
-
-      respond_to do |format|
-        if @event.save
-          d = start_date
-          while d <= end_date
-            if w_days.include? d.wday.to_s
-              event = Event.new(event_params)
-              event.start_date =  d.strftime("%Y-%m-%d")
-              event.end_time = ""
-              event.parent_id = @event.id
-              event.save
-            end
-            d += 1
-          end  
-          format.html { redirect_to root_url, notice: 'Event was successfully updated.' }
-        else
-          format.html { redirect_to root_url, notice: 'Event was not updated.' }
-        end
-      end 
-      end
-      
+      end  
     end
-  end
 
   # DELETE /events/1
   # DELETE /events/1.json

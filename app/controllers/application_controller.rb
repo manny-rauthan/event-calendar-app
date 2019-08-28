@@ -1,6 +1,6 @@
 class ApplicationController < ActionController::Base
 	def index
-		events = Event.where.not(parent_id: 0).all
+		events = Event.where("(event_type = ? and parent_id != ?) or (event_type = ? and parent_id = ?)",'recurring',0,'single',0)
 		@events = Array.new
 		events.each do |event|
 			ev = Hash.new
