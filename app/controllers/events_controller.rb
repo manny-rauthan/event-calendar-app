@@ -3,6 +3,7 @@ class EventsController < ApplicationController
 
   before_action :set_event, only: ['destroy']
   def create
+
     w_days = params[:event][:reccurring_days]
     params['event']['reccurring_days'] = params['event']['reccurring_days'].to_s
   
@@ -43,7 +44,7 @@ class EventsController < ApplicationController
       @child = Event.find(params[:event][:event_id])
       @parent = Event.find(@child.id)
       if @child.event_type === 'single'
-        if @child_event.update(event_params)
+        if @child.update(event_params)
           redirect_to root_url, notice: 'This Event was successfully updated.' 
         else
           redirect_to root_url, notice: 'This Event was not updated.' 
@@ -62,26 +63,24 @@ class EventsController < ApplicationController
           @child = Event.find(params[:event][:event_id])
           @parent = Event.find(@child.parent_id)
           w_days_existing = @parent.reccurring_days
-          child_events = Event.where(:parent_id => @parent.id)
+          child_events = Event.where(:parent_id => @parent.id).where("start_date >= ?",@child.start_date).all
           
           # removing the weekdays events if present
           diff = JSON.parse(w_days_existing) - w_days
           unless diff.blank?
             child_events.each do |ev|
-              start_date = Date.parse(ev.start_date.to_s)
+              start_date = ev.start_date
               if diff.include? start_date.wday.to_s
                 ev.destroy
               end
             end
           end
 
-          child_events = Event.where(:parent_id => @parent.id)
           # child_events.update(event_params)
-
           # adding new weekdays events if present
           new_wdays = w_days - JSON.parse(w_days_existing)
           exist_wdays = w_days & JSON.parse(w_days_existing)
-          d = Date.new
+          d = @child.start_date
           end_date = Date.parse(@parent.end_date.to_s)
 
           unless new_wdays.blank?
@@ -96,6 +95,13 @@ class EventsController < ApplicationController
               d += 1
             end 
           end
+
+          Event.where(:parent_id => @parent.id).where("start_date >= ?",@child.start_date).all.each { |e| e.update(event_params)}
+
+
+          # events = Event.where("parent_id = ?  and start_date >= ?",@parent.id,@child.start_date)
+          # events.update(event_params)
+
           redirect_to root_url, notice: 'This Event was successfully updated.'
           end
         end
